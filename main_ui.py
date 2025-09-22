@@ -78,7 +78,32 @@ class App:
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
         
     def ejecutar_fuerza_bruta(self):
-        messagebox.showinfo("Información", "Algoritmo de Fuerza Bruta no implementado.")
+        ruta_entrada = filedialog.askopenfilename(
+            title="Seleccione el archivo de entrada",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_entrada:
+            return
+
+        materias, estudiantes = leer_entrada(ruta_entrada)
+        if materias is None or estudiantes is None:
+            messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
+            return
+            
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
+        asignaciones, costo = rocV(materias, estudiantes)
+
+        ruta_salida = filedialog.asksaveasfilename(
+            title="Guardar archivo de salida",
+            defaultextension=".txt",
+            initialfile="salida_voraz.txt",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_salida:
+            return
+
+        escribir_salida(ruta_salida, asignaciones, costo)
+        messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
     def ejecutar_dinamica(self):
         messagebox.showinfo("Información", "Algoritmo de Programación Dinámica no implementado.")
