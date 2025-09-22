@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
-from solucion_voraz import rocV, leer_entrada, escribir_salida
+from utils import leer_entrada, escribir_salida
+from solucion_voraz import rocV
 # from solucion_fb import rocFB
 # from solucion_pd import rocPD
 
