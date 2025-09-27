@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
 from solucion_voraz import rocV, leer_entrada, escribir_salida
+from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
 
 class App:
     def __init__(self, root):
@@ -81,7 +82,21 @@ class App:
         messagebox.showinfo("Información", "Algoritmo de Fuerza Bruta no implementado.")
 
     def ejecutar_dinamica(self):
-        messagebox.showinfo("Información", "Algoritmo de Programación Dinámica no implementado.")
+        ruta_entrada = filedialog.askopenfilename(
+            title="Seleccione el archivo de entrada",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_entrada:
+            return
+
+        materias, estudiantes = leer_entradaPD(ruta_entrada)
+        if materias is None or estudiantes is None:
+            messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
+            return
+        #print("Materias: ", materias)
+        #print("Estudiantes: ", estudiantes)   
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
+        rocPD(materias, estudiantes)
 
 if __name__ == "__main__":
     root = tk.Tk()
