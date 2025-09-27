@@ -1,5 +1,4 @@
 from tkinter import filedialog
-from Clases import Materia, Estudiante, MateriasConPrioridad
 import sys
 
 
