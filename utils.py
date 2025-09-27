@@ -1,4 +1,7 @@
+from tkinter import filedialog
+from Clases import Materia, Estudiante, MateriasConPrioridad
 import sys
+
 
 def leer_entrada(ruta_archivo):
     materias = {}
@@ -30,6 +33,7 @@ def leer_entrada(ruta_archivo):
                     puntero += 1
                 
                 estudiantes[e_id] = {'solicitudes': solicitudes}
+            print(materias, estudiantes)
         return materias, estudiantes
     except FileNotFoundError:
         print(f"Error: No se encontró el archivo en la ruta '{ruta_archivo}'")
@@ -37,6 +41,13 @@ def leer_entrada(ruta_archivo):
     except (ValueError, IndexError) as e:
         print(f"Error: El archivo de entrada no tiene el formato correcto. Detalles: {e}")
         return None, None
+
+ruta_entrada = filedialog.askopenfilename(
+    title="Seleccione el archivo de entrada",
+    filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+)
+
+materias, estudiantes = leer_entrada(ruta_entrada)
 
 def escribir_salida(ruta_archivo, asignaciones, costo):
     try:

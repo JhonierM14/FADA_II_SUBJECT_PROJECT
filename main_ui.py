@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
-from solucion_voraz import rocV, leer_entrada, escribir_salida
+from solucion_voraz import rocV
+from solucion_fb import roc_FB
+from utils import leer_entrada, escribir_salida
 
 class App:
     def __init__(self, root):
@@ -86,17 +88,23 @@ class App:
             return
 
         materias, estudiantes = leer_entrada(ruta_entrada)
+
+        # Convertir materias_dict a lista de tuplas
+        materias = [(id_materia, cupos) for id_materia, cupos in materias.items()]
+        # Convertir estudiantes_dict a lista de tuplas
+        estudiantes = [(id_estudiante, datos['solicitudes']) for id_estudiante, datos in estudiantes.items()]
+
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
             return
             
-        messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
-        asignaciones, costo = rocV(materias, estudiantes)
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
+        asignaciones, costo = roc_FB(materias, estudiantes)
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
             defaultextension=".txt",
-            initialfile="salida_voraz.txt",
+            initialfile="salida_fuerza_bruta.txt",
             filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
         )
         if not ruta_salida:
