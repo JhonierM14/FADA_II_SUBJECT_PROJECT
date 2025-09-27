@@ -41,13 +41,6 @@ def leer_entrada(ruta_archivo):
         print(f"Error: El archivo de entrada no tiene el formato correcto. Detalles: {e}")
         return None, None
 
-ruta_entrada = filedialog.askopenfilename(
-    title="Seleccione el archivo de entrada",
-    filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
-)
-
-materias, estudiantes = leer_entrada(ruta_entrada)
-
 def escribir_salida(ruta_archivo, asignaciones, costo):
     try:
         with open(ruta_archivo, 'w', encoding='utf-8') as f:

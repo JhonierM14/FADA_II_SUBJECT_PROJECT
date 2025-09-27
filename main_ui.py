@@ -109,7 +109,7 @@ class App:
         )
         if not ruta_salida:
             return
-
+        
         escribir_salida(ruta_salida, asignaciones, costo)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
