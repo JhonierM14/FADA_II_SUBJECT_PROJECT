@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
 from solucion_voraz import rocV
-from solucion_fb import roc_FB
+from solucion_fb import rocFB
 from utils import leer_entrada, escribir_salida
 
 class App:
@@ -99,7 +99,7 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
-        asignaciones, costo = roc_FB(materias, estudiantes)
+        asignaciones, costo = rocFB(materias, estudiantes)
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
