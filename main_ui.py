@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, font
 
 from solucion_voraz import rocV
 from solucion_fb import rocFB
+from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
 from utils import leer_entrada, escribir_salida
 
 class App:
@@ -113,8 +114,36 @@ class App:
         escribir_salida(ruta_salida, asignaciones, costo)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
+
     def ejecutar_dinamica(self):
-        messagebox.showinfo("Información", "Algoritmo de Programación Dinámica no implementado.")
+        ruta_entrada = filedialog.askopenfilename(
+            title="Seleccione el archivo de entrada",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_entrada:
+            return
+
+        materias, estudiantes = leer_entradaPD(ruta_entrada)
+        if materias is None or estudiantes is None:
+            messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
+            return
+        #print("Materias: ", materias)
+        #print("Estudiantes: ", estudiantes)   
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo dinamico. Por favor, espere.")
+
+        ruta_salida = filedialog.asksaveasfilename(
+            title="Guardar archivo de salida",
+            defaultextension=".txt",
+            initialfile="salida_dinamica.txt",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_salida:
+            return
+
+        asignaciones, costo = rocPD(materias, estudiantes)
+
+        escribir_salidaPD(ruta_salida, asignaciones, costo)
+        messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":
     root = tk.Tk()
