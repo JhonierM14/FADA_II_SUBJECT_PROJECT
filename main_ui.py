@@ -95,8 +95,21 @@ class App:
             return
         #print("Materias: ", materias)
         #print("Estudiantes: ", estudiantes)   
-        messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
-        rocPD(materias, estudiantes)
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo dinamico. Por favor, espere.")
+
+        ruta_salida = filedialog.asksaveasfilename(
+            title="Guardar archivo de salida",
+            defaultextension=".txt",
+            initialfile="salida_dinamica.txt",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_salida:
+            return
+
+        asignaciones, costo =rocPD(materias, estudiantes)
+
+        escribir_salidaPD(ruta_salida, asignaciones, costo)
+        messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":
     root = tk.Tk()
