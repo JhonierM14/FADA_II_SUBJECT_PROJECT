@@ -117,9 +117,9 @@ def medirInsatisfaccionEstudiante(ma: list[Materia], ms: list[tuple]) -> float:
     primer_operando: float = 1 - (len(ma)/len(ms))
     segundo_operando: float = sumatoriaPrioridadesMateriasNoMatriculadasPorUnEstudiante(ma, ms) / calcularGamma(len(ms))
 
-    print("Primer operando: ", 1, " - ", (len(ma)/len(ms)), " = ", primer_operando)
-    print("Segundo operando: ", sumatoriaPrioridadesMateriasNoMatriculadasPorUnEstudiante(ma, ms), " / ", calcularGamma(len(ms)), " = ", segundo_operando)
-    print("Insatisfacción del estudiante: ", primer_operando, " * ", segundo_operando, " = ", primer_operando * segundo_operando)
+    #print("Primer operando: ", 1, " - ", (len(ma)/len(ms)), " = ", primer_operando)
+    #print("Segundo operando: ", sumatoriaPrioridadesMateriasNoMatriculadasPorUnEstudiante(ma, ms), " / ", calcularGamma(len(ms)), " = ", segundo_operando)
+    #print("Insatisfacción del estudiante: ", primer_operando, " * ", segundo_operando, " = ", primer_operando * segundo_operando)
     return primer_operando * segundo_operando
 
 def obtenerMateriasMatriculadas(estudiante: list, materias: list[Materia]) -> list[Materia]:
@@ -139,10 +139,10 @@ def obtenerMateriasMatriculadas(estudiante: list, materias: list[Materia]) -> li
         if estudiante in materia.estudiantes:
             lista.append(materia)
     
-    print("-----")
-    print("Materias matriculadas por el estudiante ", estudiante[0], " en la combinacion: ")
-    print(lista)
-    print(f"Materias que quiere matricular el estudiante: {estudiante[1]}")
+    #print("-----")
+    #print("Materias matriculadas por el estudiante ", estudiante[0], " en la combinacion: ")
+    #print(lista)
+    #print(f"Materias que quiere matricular el estudiante: {estudiante[1]}")
     return lista
 
 def medirInsatisfaccionGeneral(materias: list[Materia], estudiantes: list[list]) -> float:
@@ -187,10 +187,10 @@ def encontrarSolucion(listaCombinacionesMateriasAceptadas: list[list[Materia]], 
         # combinacion es una tupla con una opción por materia
 
         # Calcular insatisfacción general para esta combinación
-        print("\n--- Nueva Combinación ---")
-        print(len(combinacion))
-        print(combinacion)
-        print("\n\n")
+        #print("\n--- Nueva Combinación ---")
+        #print(len(combinacion))
+        #print(combinacion)
+        #print("\n\n")
         insatisfaccion = medirInsatisfaccionGeneral(list(combinacion), estudiantes)
 
         # Verificar si es la mejor hasta ahora
@@ -198,8 +198,8 @@ def encontrarSolucion(listaCombinacionesMateriasAceptadas: list[list[Materia]], 
             menor_insatisfaccion = insatisfaccion
             mejor_combinacion = combinacion
 
-    print("\n\n------")
-    print(f"Mejor combinación: {mejor_combinacion}, \nInsatisfacción: {menor_insatisfaccion}")
+    #print("\n\n------")
+    #print(f"Mejor combinación: {mejor_combinacion}, \nInsatisfacción: {menor_insatisfaccion}")
     return mejor_combinacion, menor_insatisfaccion
 
 def rocFB(materias: list[Materia], estudiantes: list) -> tuple:

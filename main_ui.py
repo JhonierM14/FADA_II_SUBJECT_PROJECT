@@ -5,6 +5,7 @@ from solucion_voraz import rocV
 from solucion_fb import rocFB
 from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
 from utils import leer_entrada, escribir_salida
+import time
 
 class App:
     def __init__(self, root):
@@ -100,7 +101,10 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
+
+        start: float = time.time()
         asignaciones, costo = rocFB(materias, estudiantes)
+        end: float = time.time()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -112,6 +116,8 @@ class App:
             return
         
         escribir_salida(ruta_salida, asignaciones, costo)
+        
+        print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 
@@ -126,9 +132,7 @@ class App:
         materias, estudiantes = leer_entradaPD(ruta_entrada)
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
-            return
-        #print("Materias: ", materias)
-        #print("Estudiantes: ", estudiantes)   
+            return  
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo dinamico. Por favor, espere.")
 
         ruta_salida = filedialog.asksaveasfilename(
@@ -139,10 +143,13 @@ class App:
         )
         if not ruta_salida:
             return
-
+        start: float = time.time()
         asignaciones, costo = rocPD(materias, estudiantes)
-
+        end: float = time.time()
+        
         escribir_salidaPD(ruta_salida, asignaciones, costo)
+        
+        print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":

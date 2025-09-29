@@ -89,7 +89,7 @@ def rocPD(materias, estudiantes):
     matrix = [[None for _ in range(columnas)] for _ in range(filas)]
     
     asignaciones = [[None] for _ in range(columnas)]
-    ins_finales = [None for _ in range(columnas)]
+    ins_finales = [1 for _ in range(columnas)]
 
     # Llenar la matriz de insatisfacciones
     for i in range(filas):
@@ -106,7 +106,7 @@ def rocPD(materias, estudiantes):
         if i==0:
             menorInsatisfaccion(materias[i], matrix[i], None)
         else:
-            menorInsatisfaccion(materias[i], matrix[i], matrix[i-1])
+            menorInsatisfaccion(materias[i], matrix[i], matrix[:i])
 
    #Se recorrre la matriz de izquierda a derecha, y abajo hacia arriba, para obtener la instatisfacción final de cada estudiante 
    # y mientras se van agregando las materias en las que fue matriculado.
@@ -116,7 +116,7 @@ def rocPD(materias, estudiantes):
         while i >= 0:
             if matrix[i][j][2] == 1:                
                 matriculadas.append(materias[i][0])
-                if ins_finales[j] is None:
+                if ins_finales[j] == 1:
                     ins_finales[j] = matrix[i][j][1]
                 i -= 1
             else:
@@ -124,45 +124,41 @@ def rocPD(materias, estudiantes):
         asignaciones[j] = (estudiantes[j][0], matriculadas)
 
     insatisfaccion_total = sum(ins_finales) / columnas
+    
     print("Insatisfacción total: ", insatisfaccion_total)
     #print("Asignaciones: ", asignaciones)
     return asignaciones, insatisfaccion_total
 
 #Funcion auxiliar que nos ayuda a encontrar a los estudiantes con menor insatisfacción al asignarles una materia, 
 # segun los cupos de dicha materia
-def menorInsatisfaccion(materia, ins, ins_anterior):
+def menorInsatisfaccion(materia, ins, matrix_anterior):
     cupos: int = materia[1]
+    ins_anterior = []
+
     #Se hacen deepcopies para evitar modificar las listas originales, porque python manda todo con referencias (como en lp xd)
     ins_copy = copy.deepcopy(ins)
-    dif_ins = copy.deepcopy(ins_anterior)
+    dif_ins = copy.deepcopy(matrix_anterior[len(matrix_anterior)-1]) if matrix_anterior is not None else None
 
-    #Se calcula la diferencia de instatisfacción entre la materia actual y la anterior
-    for i in range(len(ins)):
-        if ins_anterior is not None:
-            dif_ins[i][1]=ins_anterior[i][1]-ins[i][1]
-            #Se usa para verificar si la insatisfacción no cambió respecto a la materia anterior, 
-            # ya que eso significa que el estudiante no queria matricular esta materia
-            #por lo cual se le asigna una insatisfacción de -inf, para que sea menor a cualquier otra insatisfacción y no sea seleccionado.
-            if dif_ins[i][1] == 0:
-                dif_ins[i][1]=float('-inf')
+    if matrix_anterior is not None:
+        columnas = len(matrix_anterior[0])
+        ins_anterior = [1 for _ in range(columnas)]
+        for j in range(columnas):
+            i = len(matrix_anterior)-1
+            while i >= 0:
+                if matrix_anterior[i][j][2] == 1:                
+                    ins_anterior[j] = matrix_anterior[i][j][1]
+                    i = -1
+                else:
+                    i -= 1
+        print("Insatisfacción anterior: ", ins_anterior)
 
-    #Buscar elementos con insatisfacción repetida
-    """
-    seen = set()
-    duplicates = []
+        #Se calcula la diferencia de instatisfacción entre la materia actual y la anterior
+        for i in range(len(ins)):
+            dif_ins[i][1]=ins_anterior[i]-ins[i][1] 
 
-    for i in ins:
-        if i[1] in seen:
-            duplicates.append(i)
-            break
-        else:
-            seen.add(i[1])
-    print("duplicates: ", duplicates)
-    """
-    #print("ins: ", ins)
     #Luego de la primera materia, se busca asignar los cupos a los estudiantes en orden de mayor reduccion de insatisfacción
     #al agregarles la materia actual
-    if ins_anterior is not None: 
+        dif_ins = [x for x in dif_ins if x[1] != 0] #Remover a los estudiantes que no querien matricular la materia actual, osea los cuales su instatisfacción no cambio con respecto a la materia anterior
         dif_ins.sort(key=lambda x: x[1], reverse=True)
         matriculados = [i[0] for i in dif_ins[:cupos]]        
         for i in range(len(ins)):
@@ -170,15 +166,15 @@ def menorInsatisfaccion(materia, ins, ins_anterior):
                 ins[i].append(1) #1 si fue matriculado
             else:
                 ins[i].append(0) #0 si no fue matriculado
-    else:
-        #Se usa para la primera fila (materia), donde no hay insatisfacción anterior para comparar la diferencia
-        ins_copy.sort(key=lambda x: x[1])
-        matriculados = ins_copy[:cupos]        
-        for i in range(len(ins)):
-            if ins[i] in matriculados and ins[i][1] != 1:
-                ins[i].append(1) #1 si fue matriculado
-            else:
-                ins[i].append(0) #0 si no fue matriculado
+
+    #Se usa para la primera fila (materia), donde no hay insatisfacción anterior para comparar la diferencia
+    ins_copy.sort(key=lambda x: x[1])
+    matriculados = ins_copy[:cupos]        
+    for i in range(len(ins)):
+        if ins[i] in matriculados and ins[i][1] != 1:
+            ins[i].append(1) #1 si fue matriculado
+        else:
+            ins[i].append(0) #0 si no fue matriculado
     
 
 def escribir_salidaPD(ruta_archivo, asignaciones, costo):
