@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
-
-from solucion_voraz import rocV, leer_entrada, escribir_salida
+from solucion_voraz import rocV
+from solucion_fb import rocFB
 from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
+from utils import leer_entrada, escribir_salida
 
 class App:
     def __init__(self, root):
@@ -113,6 +114,7 @@ class App:
         escribir_salida(ruta_salida, asignaciones, costo)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
+
     def ejecutar_dinamica(self):
         ruta_entrada = filedialog.askopenfilename(
             title="Seleccione el archivo de entrada",
@@ -138,7 +140,7 @@ class App:
         if not ruta_salida:
             return
 
-        asignaciones, costo =rocPD(materias, estudiantes)
+        asignaciones, costo = rocPD(materias, estudiantes)
 
         escribir_salidaPD(ruta_salida, asignaciones, costo)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
