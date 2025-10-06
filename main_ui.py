@@ -67,7 +67,9 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
+        start_time = time.time()
         asignaciones, costo = rocV(materias, estudiantes)
+        end_time = time.time()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -79,6 +81,7 @@ class App:
             return
 
         escribir_salida(ruta_salida, asignaciones, costo)
+        print(f"Tiempo de ejecución (Voraz): {end_time - start_time:.6f} segundos")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
         
     def ejecutar_fuerza_bruta(self):
