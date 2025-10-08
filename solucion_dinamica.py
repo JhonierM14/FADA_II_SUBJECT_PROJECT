@@ -154,7 +154,7 @@ def rocPD(materias, estudiantes):
     mejor_estado, mejor_insa = min(estados_finales, key=lambda x: x[1])
     mejor_insa_promedio = mejor_insa / n
     
-    #print(f"Estado final: {mejor_estado}")
+    print(f"Estado final: {mejor_estado}")
     
     # Reconstrucción de la solución
     asignaciones = {}

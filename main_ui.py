@@ -78,9 +78,9 @@ class App:
         if not ruta_salida:
             return
 
-        start: float = time.time()
+        start: float = time.perf_counter()
         escribir_salida(ruta_salida, asignaciones, costo)
-        end: float = time.time()
+        end: float = time.perf_counter()
 
         print("Asignaciones: ", asignaciones)
         print("Insatisfacción: ", costo)
@@ -109,9 +109,9 @@ class App:
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
 
-        start: float = time.time()
+        start: float = time.perf_counter()
         asignaciones, costo = rocFB(materias, estudiantes)
-        end: float = time.time()
+        end: float = time.perf_counter()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -156,9 +156,9 @@ class App:
         if not ruta_salida:
             return
 
-        start: float = time.time()
+        start: float = time.perf_counter()
         asignaciones, costo = rocPD(materias, estudiantes)
-        end: float = time.time()
+        end: float = time.perf_counter()
         print("Asignaciones: ", asignaciones)
         print("Insatisfacción: ", costo)
 
