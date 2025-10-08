@@ -5,6 +5,7 @@ from solucion_voraz import rocV
 from solucion_fb import rocFB
 from solucion_dinamica import rocPD
 from utils import leer_entrada, escribir_salida
+import time
 
 class App:
     def __init__(self, root):
@@ -77,11 +78,58 @@ class App:
         if not ruta_salida:
             return
 
+        start: float = time.time()
         escribir_salida(ruta_salida, asignaciones, costo)
+        end: float = time.time()
+
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
+    
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
+        print("Tiempo de ejecucion: ", end - start)
         
     def ejecutar_fuerza_bruta(self):
-        messagebox.showinfo("Información", "Algoritmo de Fuerza Bruta no implementado.")
+        ruta_entrada = filedialog.askopenfilename(
+            title="Seleccione el archivo de entrada",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_entrada:
+            return
+
+        materias, estudiantes = leer_entrada(ruta_entrada)
+
+        # Convertir materias_dict a lista de tuplas
+        materias = [(id_materia, cupos) for id_materia, cupos in materias.items()]
+        # Convertir estudiantes_dict a lista de tuplas
+        estudiantes = [(id_estudiante, datos['solicitudes']) for id_estudiante, datos in estudiantes.items()]
+
+        if materias is None or estudiantes is None:
+            messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
+            return
+            
+        messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
+
+        start: float = time.time()
+        asignaciones, costo = rocFB(materias, estudiantes)
+        end: float = time.time()
+
+        ruta_salida = filedialog.asksaveasfilename(
+            title="Guardar archivo de salida",
+            defaultextension=".txt",
+            initialfile="salida_fuerza_bruta.txt",
+            filetypes=(("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*"))
+        )
+        if not ruta_salida:
+            return
+        
+        escribir_salida(ruta_salida, asignaciones, costo)
+
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
+        
+        print("Tiempo de ejecucion: ", end - start)
+        messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
+
 
     def ejecutar_dinamica(self):
         ruta_entrada = filedialog.askopenfilename(
@@ -108,9 +156,14 @@ class App:
         if not ruta_salida:
             return
 
-        asignaciones, costo =rocPD(materias, estudiantes)
+        start: float = time.time()
+        asignaciones, costo = rocPD(materias, estudiantes)
+        end: float = time.time()
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
 
         escribir_salida(ruta_salida, asignaciones, costo)
+        print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":

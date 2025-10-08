@@ -123,7 +123,7 @@ def rocPD(materias, estudiantes):
                 materias, cupos_usados, preferencias
             )
                 
-            print(f"ID: {id_est} Combinaciones: {combinaciones_con_insa}")
+            #print(f"ID: {id_est} Combinaciones: {combinaciones_con_insa}")
             for nuevos_cupos, materias_asignadas, insa_estudiante in combinaciones_con_insa:
                 #print(f"Estudiante {id_est} materias_asignadas  {materias_asignadas} insatisfacción {insa_estudiante}")
                 nueva_insa_total = insa_acum + insa_estudiante
@@ -141,12 +141,12 @@ def rocPD(materias, estudiantes):
         # Agregar los nuevos estados al DP
         dp = {}
         dp.update(estados_nuevos)
-        print("DP:", dp)
+        #print("DP:", dp)
 
         #print(f"Estados activos después de procesar {id_est}: {len([e for e in dp if e[0] == i])}")
     
     # Encontrar el mejor estado final
-    estados_finales = [(estado, insa) for estado, insa in dp.items() if estado[0] == n]
+    estados_finales = [(estado, insa) for estado, insa in dp.items()]
     
     if not estados_finales:
         return inf, {}
@@ -154,7 +154,7 @@ def rocPD(materias, estudiantes):
     mejor_estado, mejor_insa = min(estados_finales, key=lambda x: x[1])
     mejor_insa_promedio = mejor_insa / n
     
-    print(f"Estado final: {mejor_estado}")
+    #print(f"Estado final: {mejor_estado}")
     
     # Reconstrucción de la solución
     asignaciones = {}
