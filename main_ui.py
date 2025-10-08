@@ -1,15 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
-<<<<<<< Updated upstream
-from solucion_voraz import rocV, leer_entrada, escribir_salida
-from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
-=======
 from solucion_voraz import rocV
 from solucion_fb import rocFB
-from solucion_dinamica2 import rocPD
+from solucion_dinamica import rocPD
 from utils import leer_entrada, escribir_salida
->>>>>>> Stashed changes
 
 class App:
     def __init__(self, root):
