@@ -1,8 +1,15 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, font
 
+<<<<<<< Updated upstream
 from solucion_voraz import rocV, leer_entrada, escribir_salida
 from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
+=======
+from solucion_voraz import rocV
+from solucion_fb import rocFB
+from solucion_dinamica2 import rocPD
+from utils import leer_entrada, escribir_salida
+>>>>>>> Stashed changes
 
 class App:
     def __init__(self, root):
@@ -89,7 +96,7 @@ class App:
         if not ruta_entrada:
             return
 
-        materias, estudiantes = leer_entradaPD(ruta_entrada)
+        materias, estudiantes = leer_entrada(ruta_entrada)
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
             return
@@ -108,7 +115,7 @@ class App:
 
         asignaciones, costo =rocPD(materias, estudiantes)
 
-        escribir_salidaPD(ruta_salida, asignaciones, costo)
+        escribir_salida(ruta_salida, asignaciones, costo)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":

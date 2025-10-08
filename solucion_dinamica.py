@@ -89,7 +89,6 @@ def rocPD(materias, estudiantes):
     matrix = [[None for _ in range(columnas)] for _ in range(filas)]
     
     asignaciones = [[None] for _ in range(columnas)]
-    ins_finales = [None for _ in range(columnas)]
 
     # Llenar la matriz de insatisfacciones
     for i in range(filas):
@@ -106,7 +105,6 @@ def rocPD(materias, estudiantes):
         if i==0:
             menorInsatisfaccion(materias[i], matrix[i], None)
         else:
-            menorInsatisfaccion(materias[i], matrix[i], matrix[i-1])
 
    #Se recorrre la matriz de izquierda a derecha, y abajo hacia arriba, para obtener la instatisfacción final de cada estudiante 
    # y mientras se van agregando las materias en las que fue matriculado.
@@ -130,7 +128,6 @@ def rocPD(materias, estudiantes):
 
 #Funcion auxiliar que nos ayuda a encontrar a los estudiantes con menor insatisfacción al asignarles una materia, 
 # segun los cupos de dicha materia
-def menorInsatisfaccion(materia, ins, ins_anterior):
     cupos: int = materia[1]
     #Se hacen deepcopies para evitar modificar las listas originales, porque python manda todo con referencias (como en lp xd)
     ins_copy = copy.deepcopy(ins)
