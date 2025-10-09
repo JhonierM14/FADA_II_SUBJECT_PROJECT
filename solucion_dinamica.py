@@ -82,108 +82,139 @@ def leer_entradaPD(ruta_archivo):
         print(f"Error: El archivo de entrada no tiene el formato correcto. Detalles: {e}")
         return None, None
 
-def rocPD(materias, estudiantes):
-    columnas=len(estudiantes)
-    filas=len(materias)
-    #Crear matriz de insatisfacciones
-    matrix = [[None for _ in range(columnas)] for _ in range(filas)]
+
+def menorInsatisfaccion(materia, ins, ins_anterior, estudiantes_dict):
+    """
+    Args:
+        materia: (nombre, cupos)
+        ins: lista de [id_estudiante, insatisfaccion]
+        ins_anterior: lista del nivel anterior
+        estudiantes_dict: dict {id_estudiante: {materia: prioridad, ...}}
+    """
+    print("ins", ins)
+    cupos = materia[1]
+    nombre_materia = materia[0]
     
+    ins_copy = copy.deepcopy(ins)
+    dif_ins = copy.deepcopy(ins_anterior)
+
+    if ins_anterior is not None:
+        # Calcular reducción de insatisfacción
+        for i in range(len(ins)):
+            dif_ins[i][1] = ins_anterior[i][1] - ins[i][1]
+            if dif_ins[i][1] == 0:
+                dif_ins[i][1] = float('-inf')
+        
+        # Preparar candidatos con prioridad
+        candidatos = []
+        for item in dif_ins:
+            id_est = item[0]
+            reduccion = item[1]
+            # Obtener prioridad de este estudiante en esta materia
+            prioridad = estudiantes_dict.get(id_est, {}).get(nombre_materia, 0)
+            
+            candidatos.append({
+                'id': id_est,
+                'reduccion': reduccion,
+                'prioridad': prioridad
+            })
+        
+        # Ordenar: primero mayor reducción, luego mayor prioridad
+        candidatos.sort(key=lambda x: (x['prioridad'], -x['reduccion']), reverse=True)
+        matriculados = [c['id'] for c in candidatos[:cupos]]
+        print("not none", candidatos)
+        for i in range(len(ins)):
+            if ins[i][0] in matriculados and ins[i][1] != 1:
+                print("ins[i][0]", [i][0])
+                ins[i].append(1)
+            else:
+                ins[i].append(0)
+    
+    else:
+        # Primera materia: ordenar por menor insatisfacción, desempate por mayor prioridad
+        candidatos = []
+        for item in ins_copy:
+            id_est = item[0]
+            insatisfaccion = item[1]
+            prioridad = estudiantes_dict.get(id_est, {}).get(nombre_materia, 0)
+            
+            candidatos.append({
+                'id': id_est,
+                'insatisfaccion': insatisfaccion,
+                'prioridad': prioridad
+            })
+        
+        # Ordenar: menor insatisfacción primero, mayor prioridad para desempate
+        candidatos.sort(key=lambda x: (x['insatisfaccion'], -x['prioridad']))
+        matriculados_ids = [c['id'] for c in candidatos[:cupos]]
+        print("none", candidatos)
+
+        for i in range(len(ins)):
+            if ins[i][0] in matriculados_ids and ins[i][1] != 1:
+                print("ins[i][0]", [i][0])
+                ins[i].append(1)
+            else:
+                ins[i].append(0)
+    
+    # Retornar la insatisfacción total para esta configuración
+    total_insatisfaccion = sum(item[1] for item in ins)
+    return total_insatisfaccion
+
+
+def rocPD(materias, estudiantes):
+    columnas = len(estudiantes)
+    filas = len(materias)
+    
+    matrix = [[None for _ in range(columnas)] for _ in range(filas)]
     asignaciones = [[None] for _ in range(columnas)]
     ins_finales = [None for _ in range(columnas)]
 
-    # Llenar la matriz de insatisfacciones
+    # Crear diccionario de estudiantes para acceso rápido
+    # Convertir de [(materia, prioridad), ...] a {materia: prioridad}
+    estudiantes_dict = {}
+    for est_id, solicitudes_lista in estudiantes:
+        estudiantes_dict[est_id] = {materia: prioridad for materia, prioridad in solicitudes_lista}
+
+    # Llenar la matriz
     for i in range(filas):
         for j in range(columnas):
             matriculadas = []
-            #Aqui se recorre la matriz hacia arriba para obtener las materias en las que ya fue matriculado el estudiante j
             for y in range(len(materias)):
-                if y<i:
-                    if matrix[y][j][2]==1:
+                if y < i:
+                    if matrix[y][j][2] == 1:
                         matriculadas.append(materias[y])
             
             matriculadas.append(materias[i])
             matrix[i][j] = [estudiantes[j][0], calcular_insatisfaccion(matriculadas, estudiantes[j])]
-        if i==0:
-            menorInsatisfaccion(materias[i], matrix[i], None)
+        
+        # Pasar diccionario de estudiantes
+        if i == 0:
+            menorInsatisfaccion(materias[i], matrix[i], None, estudiantes_dict)
         else:
-            menorInsatisfaccion(materias[i], matrix[i], matrix[i-1])
+            menorInsatisfaccion(materias[i], matrix[i], matrix[i-1], estudiantes_dict)
 
-   #Se recorrre la matriz de izquierda a derecha, y abajo hacia arriba, para obtener la instatisfacción final de cada estudiante 
-   # y mientras se van agregando las materias en las que fue matriculado.
+    # Reconstrucción
     for j in range(columnas):
         i = filas - 1
         matriculadas = []
+        insatisfaccion_estudiante = 0
+        
         while i >= 0:
-            if matrix[i][j][2] == 1:                
+            if matrix[i][j][2] == 1:
                 matriculadas.append(materias[i][0])
-                if ins_finales[j] is None:
-                    ins_finales[j] = matrix[i][j][1]
+                insatisfaccion_estudiante = matrix[i][j][1]
                 i -= 1
             else:
                 i -= 1
+        
         asignaciones[j] = (estudiantes[j][0], matriculadas)
+        ins_finales[j] = insatisfaccion_estudiante
 
+    # Verificar que no hay valores None
+    ins_finales = [x if x is not None else 0 for x in ins_finales]
     insatisfaccion_total = sum(ins_finales) / columnas
-
-    print("Insatisfacción total: ", insatisfaccion_total)
-    #print("Asignaciones: ", asignaciones)
     return asignaciones, insatisfaccion_total
-
-#Funcion auxiliar que nos ayuda a encontrar a los estudiantes con menor insatisfacción al asignarles una materia, 
-# segun los cupos de dicha materia
-def menorInsatisfaccion(materia, ins, ins_anterior):
-    cupos: int = materia[1]
-    #Se hacen deepcopies para evitar modificar las listas originales, porque python manda todo con referencias (como en lp xd)
-    ins_copy = copy.deepcopy(ins)
-    dif_ins = copy.deepcopy(ins_anterior)
-
-    #Se calcula la diferencia de instatisfacción entre la materia actual y la anterior
-    for i in range(len(ins)):
-        if ins_anterior is not None:
-            dif_ins[i][1]=ins_anterior[i][1]-ins[i][1]
-            #Se usa para verificar si la insatisfacción no cambió respecto a la materia anterior, 
-            # ya que eso significa que el estudiante no queria matricular esta materia
-            #por lo cual se le asigna una insatisfacción de -inf, para que sea menor a cualquier otra insatisfacción y no sea seleccionado.
-            if dif_ins[i][1] == 0:
-                dif_ins[i][1]=float('-inf')
-
-    #Buscar elementos con insatisfacción repetida
-    """
-    seen = set()
-    duplicates = []
-
-    for i in ins:
-        if i[1] in seen:
-            duplicates.append(i)
-            break
-        else:
-            seen.add(i[1])
-
-    print("duplicates: ", duplicates)
-    """
-    #print("ins: ", ins)
-    #Luego de la primera materia, se busca asignar los cupos a los estudiantes en orden de mayor reduccion de insatisfacción
-    #al agregarles la materia actual
-    if ins_anterior is not None: 
-        dif_ins.sort(key=lambda x: x[1], reverse=True)
-        matriculados = [i[0] for i in dif_ins[:cupos]]        
-        for i in range(len(ins)):
-            if ins[i][0] in matriculados and ins[i][1] != 1:
-
-                ins[i].append(1) #1 si fue matriculado
-            else:
-                ins[i].append(0) #0 si no fue matriculado
-    else:
-        #Se usa para la primera fila (materia), donde no hay insatisfacción anterior para comparar la diferencia
-        ins_copy.sort(key=lambda x: x[1])
-        matriculados = ins_copy[:cupos]        
-        for i in range(len(ins)):
-            if ins[i] in matriculados and ins[i][1] != 1:
-                ins[i].append(1) #1 si fue matriculado
-            else:
-                ins[i].append(0) #0 si no fue matriculado
     
-
 def escribir_salidaPD(ruta_archivo, asignaciones, costo):
     try:
         with open(ruta_archivo, 'w', encoding='utf-8') as f:

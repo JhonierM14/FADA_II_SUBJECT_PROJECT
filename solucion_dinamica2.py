@@ -96,6 +96,7 @@ def dinamica(materias, estudiantes):
     choice[estado_inicial] = None
     
     estudiantes_list = list(estudiantes_procesados.items())
+    print(f"\nProcesando estudiante  {estudiantes_list}")
 
     # procesar estudiante por estudiante
     for i in range(1, n + 1):
@@ -107,9 +108,8 @@ def dinamica(materias, estudiantes):
         # Iterar sobre todos los estados del nivel anterior
         for estado, insa_acum in dp.items():
             num_est, cupos_usados = estado
-            #print(f"cupos_usados {cupos_usados} estado: {estado}")
+            print(f"cupos_usados {dp.items()} estado: {estado}")
 
-            
             # Solo procesar estados del nivel anterior
             if num_est != i - 1:
                 continue
@@ -130,6 +130,7 @@ def dinamica(materias, estudiantes):
                 nueva_insa_total = insa_acum + insa_estudiante
 
                 nuevo_estado = (i, nuevos_cupos)
+                #print(f"nuevo_estado: {(i, nuevos_cupos)}")
                 
                 # Actualizar si es mejor que lo que teníamos
                 if nuevo_estado not in estados_nuevos or nueva_insa_total < estados_nuevos[nuevo_estado]:
@@ -169,25 +170,19 @@ def dinamica(materias, estudiantes):
     
     return mejor_insa_promedio  , asignaciones
 
-# Ejemplo 2
-
+# Ejemplo 3 - Datos convertidos del formato de entrada
 materias = {
-    "1000": 5,  # materia 1000 con 5 cupos
-    "1001": 4,  # materia 1001 con 4 cupos  
-    "1002": 3   # materia 1002 con 3 cupos
+    "M1": 3,  # materia M1 con 3 cupos
+    "M2": 3,  # materia M2 con 3 cupos  
+    "M3": 2   # materia M3 con 2 cupos
 }
 
 estudiantes = {
-    "100": {"solicitudes": 1, "1000": 5},                       # 1 solicitud
-    "101": {"solicitudes": 1, "1002": 3},                       # 1 solicitud
-    "102": {"solicitudes": 1, "1001": 5},                       # 1 solicitud
-    "103": {"solicitudes": 2, "1001": 2, "1002": 2},            # 2 solicitudes
-    "104": {"solicitudes": 1, "1000": 1},                       # 1 solicitud
-    "105": {"solicitudes": 1, "1002": 3},                       # 1 solicitud
-    "106": {"solicitudes": 1, "1001": 1},                       # 1 solicitud
-    "107": {"solicitudes": 2, "1001": 1, "1000": 2},            # 2 solicitudes
-    "108": {"solicitudes": 3, "1001": 3, "1000": 4, "1002": 4}, # 3 solicitudes
-    "109": {"solicitudes": 2, "1001": 5, "1000": 2}             # 2 solicitudes
+    "e1": {"solicitudes": 3, "M1": 5, "M2": 2, "M3": 1},       # 3 solicitudes
+    "e2": {"solicitudes": 3, "M1": 4, "M2": 1, "M3": 3},       # 3 solicitudes
+    "e3": {"solicitudes": 2, "M2": 3, "M3": 2},                # 2 solicitudes
+    "e4": {"solicitudes": 2, "M1": 2, "M3": 3},                # 2 solicitudes
+    "e5": {"solicitudes": 3, "M1": 2, "M2": 3, "M3": 3}        # 3 solicitudes
 }
 
 valor, asignaciones = dinamica(materias, estudiantes)
