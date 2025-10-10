@@ -64,6 +64,12 @@ def generar_combinaciones(materias_dict, cupos_usados, preferencias_estudiante):
                 materias_asignadas = {m: preferencias_estudiante[m] for m in combo}
                 insa = insatisfaccion_estudiante(preferencias_estudiante, materias_asignadas)
                 combinaciones.append((tuple(nuevos_cupos), materias_asignadas, insa))
+
+    if combinaciones == []:
+        # Caso donde no se asigna ninguna materia por falta de cupos (insatisfaccion maxima)
+        insa = 1
+        combinaciones.append((cupos_usados, {}, insa))
+
     return combinaciones
 
 def rocPD(materias, estudiantes):
@@ -123,7 +129,7 @@ def rocPD(materias, estudiantes):
                 materias, cupos_usados, preferencias
             )
                 
-            #print(f"ID: {id_est} Combinaciones: {combinaciones_con_insa}")
+            print(f"ID: {id_est} Combinaciones: {combinaciones_con_insa}")
             for nuevos_cupos, materias_asignadas, insa_estudiante in combinaciones_con_insa:
                 #print(f"Estudiante {id_est} materias_asignadas  {materias_asignadas} insatisfacción {insa_estudiante}")
                 nueva_insa_total = insa_acum + insa_estudiante
@@ -139,9 +145,10 @@ def rocPD(materias, estudiantes):
                     #print(f"choice[nuevo_estado] {choice[nuevo_estado]} estados_nuevos[nuevo_estado]  {estados_nuevos[nuevo_estado]}")
 
         # Agregar los nuevos estados al DP
+
         dp = {}
         dp.update(estados_nuevos)
-        #print("DP:", dp)
+        print("DP:", dp)
 
         #print(f"Estados activos después de procesar {id_est}: {len([e for e in dp if e[0] == i])}")
     
