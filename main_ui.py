@@ -3,8 +3,9 @@ from tkinter import filedialog, messagebox, font
 
 from solucion_voraz import rocV
 from solucion_fb import rocFB
-from solucion_dinamica import rocPD, leer_entradaPD, escribir_salidaPD
+from solucion_dinamica import rocPD
 from utils import leer_entrada, escribir_salida
+import time
 
 class App:
     def __init__(self, root):
@@ -77,8 +78,15 @@ class App:
         if not ruta_salida:
             return
 
+        start: float = time.perf_counter()
         escribir_salida(ruta_salida, asignaciones, costo)
+        end: float = time.perf_counter()
+
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
+    
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
+        print("Tiempo de ejecucion: ", end - start)
         
     def ejecutar_fuerza_bruta(self):
         ruta_entrada = filedialog.askopenfilename(
@@ -100,7 +108,10 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
+
+        start: float = time.perf_counter()
         asignaciones, costo = rocFB(materias, estudiantes)
+        end: float = time.perf_counter()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -112,6 +123,11 @@ class App:
             return
         
         escribir_salida(ruta_salida, asignaciones, costo)
+
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
+        
+        print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 
@@ -123,7 +139,7 @@ class App:
         if not ruta_entrada:
             return
 
-        materias, estudiantes = leer_entradaPD(ruta_entrada)
+        materias, estudiantes = leer_entrada(ruta_entrada)
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
             return
@@ -140,9 +156,14 @@ class App:
         if not ruta_salida:
             return
 
+        start: float = time.perf_counter()
         asignaciones, costo = rocPD(materias, estudiantes)
+        end: float = time.perf_counter()
+        print("Asignaciones: ", asignaciones)
+        print("Insatisfacción: ", costo)
 
-        escribir_salidaPD(ruta_salida, asignaciones, costo)
+        escribir_salida(ruta_salida, asignaciones, costo)
+        print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":

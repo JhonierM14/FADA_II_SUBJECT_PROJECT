@@ -1,233 +1,155 @@
-import sys
-import copy
+from itertools import combinations
+from math import inf
 
 def calcular_gamma(num_solicitadas):
     return 3 * num_solicitadas - 1
 
-def calcular_insatisfaccion(asignaciones, estudiante):
-    if not estudiante:
+def insatisfaccion_estudiante(solicitudes, asignadas):
+    """
+    solicitudes:  materia -> prioridad
+    asignadas:  materia -> prioridad
+    """
+    if not solicitudes:
         return 0.0
-
-    materias_solicitadas = estudiante[1]
-    #Remover de asignaciones las materias que no fueron solicitadas:
-    asignaciones = [a for a in asignaciones if a[0] in [m[0] for m in materias_solicitadas]]
-    if not asignaciones:
-        return 1.0
     
-    num_solicitadas = len(materias_solicitadas)
-    num_asignadas = len(asignaciones)
-        
-    if num_solicitadas == 0:
-        return 0.0
-
-    frustracion_cantidad = 1.0 - (num_asignadas / num_solicitadas)
-
-    prioridades_perdidas = 0
-    id_asignadas = [i[0] for i in asignaciones]
-
-    for materia in materias_solicitadas:
-        if materia[0] not in id_asignadas:
-            prioridades_perdidas += materia[1]
-
-    gamma = calcular_gamma(num_solicitadas)
-        
-    if gamma == 0:
-        frustracion_importancia = 0.0 if prioridades_perdidas == 0 else 1.0
-    else:
-        frustracion_importancia = prioridades_perdidas / gamma
-        
-    if prioridades_perdidas==gamma:
-        f_j = 1.0
-    else:
-        f_j = frustracion_cantidad * frustracion_importancia
-
+    gamma_val = calcular_gamma(len(solicitudes)) # γ(|ms_j|)
+    
+    # Cantidad de materias asignadas
+    num_asignadas = len(asignadas)
+    num_solicitudes = len(solicitudes)
+    
+    insatisfechas = [p for mat, p in solicitudes.items() if mat not in asignadas]
+    suma_insatisfechas = sum(insatisfechas)
+    
+    f_j = (1 - num_asignadas / num_solicitudes) * (suma_insatisfechas / gamma_val)
     return f_j
 
-def leer_entradaPD(ruta_archivo):
-    materias = []
-    estudiantes = []
-    try:
-        with open(ruta_archivo, 'r', encoding='utf-8') as f:
-            lineas = [line.strip() for line in f if line.strip()]
-            
-            k = int(lineas[0])
-            puntero = 1
-            for i in range(k):
-                codigo, cupo = lineas[puntero].split(',')
-                materias.append((codigo, int(cupo)))
-                puntero += 1
-
-            r = int(lineas[puntero])
-            puntero += 1
-            
-            for _ in range(r):
-                if puntero >= len(lineas): break
-                e_id, num_solicitudes = lineas[puntero].split(',')
-                num_solicitudes = int(num_solicitudes)
-                puntero += 1
-                
-                solicitudes = []
-                for _ in range(num_solicitudes):
-                    mat_id, prioridad = lineas[puntero].split(',')
-                    solicitudes.append((mat_id, int(prioridad)))
-                    puntero += 1
-
-                estudiantes.append((e_id, solicitudes))
-        return materias, estudiantes
-    
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo en la ruta '{ruta_archivo}'")
-        return None, None
-    except (ValueError, IndexError) as e:
-        print(f"Error: El archivo de entrada no tiene el formato correcto. Detalles: {e}")
-        return None, None
-
-
-def menorInsatisfaccion(materia, ins, ins_anterior, estudiantes_dict):
+def generar_combinaciones(materias_dict, cupos_usados, preferencias_estudiante):
     """
+    Genera todas las combinaciones válidas de materias para un estudiante
     Args:
-        materia: (nombre, cupos)
-        ins: lista de [id_estudiante, insatisfaccion]
-        ins_anterior: lista del nivel anterior
-        estudiantes_dict: dict {id_estudiante: {materia: prioridad, ...}}
+        materias_dict: dict {materia: cupos_totales}
+        cupos_usados: tuple con cupos usados de cada materia
+        preferencias_estudiante: dict {materia: prioridad}
+        gamma_max_estudiante: máximo de materias que puede tomar
+    
+    Returns:
+        Lista de tuplas (nuevos_cupos_usados, dict_materias_asignadas)
     """
-    print("ins", ins)
-    cupos = materia[1]
-    nombre_materia = materia[0]
-    
-    ins_copy = copy.deepcopy(ins)
-    dif_ins = copy.deepcopy(ins_anterior)
+    materias_list = list(materias_dict.keys())
+    combinaciones = []
+    # Solo se considera las materias que el estudiante solicitó
+    materias_solicitadas = [m for m in materias_list if m in preferencias_estudiante]
 
-    if ins_anterior is not None:
-        # Calcular reducción de insatisfacción
-        for i in range(len(ins)):
-            dif_ins[i][1] = ins_anterior[i][1] - ins[i][1]
-            if dif_ins[i][1] == 0:
-                dif_ins[i][1] = float('-inf')
-        
-        # Preparar candidatos con prioridad
-        candidatos = []
-        for item in dif_ins:
-            id_est = item[0]
-            reduccion = item[1]
-            # Obtener prioridad de este estudiante en esta materia
-            prioridad = estudiantes_dict.get(id_est, {}).get(nombre_materia, 0)
-            
-            candidatos.append({
-                'id': id_est,
-                'reduccion': reduccion,
-                'prioridad': prioridad
-            })
-        
-        # Ordenar: primero mayor reducción, luego mayor prioridad
-        candidatos.sort(key=lambda x: (x['prioridad'], -x['reduccion']), reverse=True)
-        matriculados = [c['id'] for c in candidatos[:cupos]]
-        print("not none", candidatos)
-        for i in range(len(ins)):
-            if ins[i][0] in matriculados and ins[i][1] != 1:
-                print("ins[i][0]", [i][0])
-                ins[i].append(1)
-            else:
-                ins[i].append(0)
-    
-    else:
-        # Primera materia: ordenar por menor insatisfacción, desempate por mayor prioridad
-        candidatos = []
-        for item in ins_copy:
-            id_est = item[0]
-            insatisfaccion = item[1]
-            prioridad = estudiantes_dict.get(id_est, {}).get(nombre_materia, 0)
-            
-            candidatos.append({
-                'id': id_est,
-                'insatisfaccion': insatisfaccion,
-                'prioridad': prioridad
-            })
-        
-        # Ordenar: menor insatisfacción primero, mayor prioridad para desempate
-        candidatos.sort(key=lambda x: (x['insatisfaccion'], -x['prioridad']))
-        matriculados_ids = [c['id'] for c in candidatos[:cupos]]
-        print("none", candidatos)
-
-        for i in range(len(ins)):
-            if ins[i][0] in matriculados_ids and ins[i][1] != 1:
-                print("ins[i][0]", [i][0])
-                ins[i].append(1)
-            else:
-                ins[i].append(0)
-    
-    # Retornar la insatisfacción total para esta configuración
-    total_insatisfaccion = sum(item[1] for item in ins)
-    return total_insatisfaccion
-
+    # Generar todas las combinaciones de 1 a gamma_max materias
+    for k in range(len(materias_solicitadas)):
+        # Crear las posibles combinaciones de materias a matricular para el estudiante
+        for combo in combinations(materias_solicitadas, k+1):
+            # Verificar que hay cupos disponibles para esta combinación
+            nuevos_cupos = list(cupos_usados)
+            valido = True
+            # Itera sobre cada materia de las combinaciones 
+            for materia in combo:
+                idx = materias_list.index(materia)
+                # Verifica si cada materia tiene cupos disponibles
+                if nuevos_cupos[idx] + 1 > materias_dict[materia]:
+                    #print(f"nuevos_cupos[idx] + 1  {nuevos_cupos[idx]} materias_dict[materia] {materias_dict[materia]}")
+                    valido = False
+                    break
+                nuevos_cupos[idx] += 1
+            if valido:
+                # Crear dict de materias asignadas con sus prioridades
+                materias_asignadas = {m: preferencias_estudiante[m] for m in combo}
+                insa = insatisfaccion_estudiante(preferencias_estudiante, materias_asignadas)
+                combinaciones.append((tuple(nuevos_cupos), materias_asignadas, insa))
+    return combinaciones
 
 def rocPD(materias, estudiantes):
-    columnas = len(estudiantes)
-    filas = len(materias)
+    """
+    Algoritmo de programación dinámica para asignación óptima de materias
+    Args:
+        materias: dict {materia: cupos_disponibles}
+        estudiantes: dict {id: {solicitudes: n, materia1: prioridad1, ...}}
     
-    matrix = [[None for _ in range(columnas)] for _ in range(filas)]
-    asignaciones = [[None] for _ in range(columnas)]
-    ins_finales = [None for _ in range(columnas)]
+    Returns:
+        (insatisfaccion_minima, dict_asignaciones)
+    """
+    n = len(estudiantes)
+    
+    estudiantes_procesados = {}
+    for id_est, info in estudiantes.items():
+        # Extraer solo las preferencias sin 'solicitudes'
+        solicitudes = info["solicitudes"]
+        solicitudes2 = {}
+        for i in range(len(solicitudes)):
+            id_m = solicitudes[i][0]
+            solicitudes2[id_m] = solicitudes[i][1]
+        estudiantes_procesados[id_est] = solicitudes2
+        #print("estudiantes_procesados: ", solicitudes2)
 
-    # Crear diccionario de estudiantes para acceso rápido
-    # Convertir de [(materia, prioridad), ...] a {materia: prioridad}
-    estudiantes_dict = {}
-    for est_id, solicitudes_lista in estudiantes:
-        estudiantes_dict[est_id] = {materia: prioridad for materia, prioridad in solicitudes_lista}
+    # Guarda (num_estudiante, (cupos_usados_por_materia)) e insatisfacción acumulada mínima
+    dp = {}
+    choice = {}  # Para rastrear decisiones
+    # Estado inicial de 0 estudiantes procesados, 0 cupos usados
+    estado_inicial = (0, tuple([0] * len(materias)))
+    dp[estado_inicial] = 0
+    choice[estado_inicial] = None
+    estudiantes_list = list(estudiantes_procesados.items())
 
-    # Llenar la matriz
-    for i in range(filas):
-        for j in range(columnas):
-            matriculadas = []
-            for y in range(len(materias)):
-                if y < i:
-                    if matrix[y][j][2] == 1:
-                        matriculadas.append(materias[y])
-            
-            matriculadas.append(materias[i])
-            matrix[i][j] = [estudiantes[j][0], calcular_insatisfaccion(matriculadas, estudiantes[j])]
-        
-        # Pasar diccionario de estudiantes
-        if i == 0:
-            menorInsatisfaccion(materias[i], matrix[i], None, estudiantes_dict)
+    # procesar estudiante por estudiante
+    for i in range(1, n + 1):
+        id_est, preferencias = estudiantes_list[i - 1]
+        #print(f"\nProcesando estudiante {i}/{n}: {id_est}")
+        estados_nuevos = {}
+        # Iterar sobre todos los estados del nivel anterior
+        for estado, insa_acum in dp.items():
+            num_est, cupos_usados = estado
+            #print(f"cupos_usados {cupos_usados} estado: {estado}")
+            # Solo procesar estados del nivel anterior
+            if num_est != i - 1:
+                continue
+            # Generar todas las combinaciones válidas de materias para cada estudiante
+            combinaciones_con_insa = generar_combinaciones(materias, cupos_usados, preferencias)
+                
+            #print(f"ID: {id_est} Combinaciones: {combinaciones_con_insa}")
+            for nuevos_cupos, materias_asignadas, insa_estudiante in combinaciones_con_insa:
+                #print(f"Estudiante {id_est} materias_asignadas  {materias_asignadas} insatisfacción {insa_estudiante}")
+                nueva_insa_total = insa_acum + insa_estudiante
+                nuevo_estado = (i, nuevos_cupos)
+                # Actualizar si es mejor que lo que teníamos
+                if nuevo_estado not in estados_nuevos or nueva_insa_total < estados_nuevos[nuevo_estado]:
+                    #print(f"nuevo_estado {nuevo_estado} nueva_insa_total  {nueva_insa_total} estados_nuevos[nuevo_estado]")
+                    estados_nuevos[nuevo_estado] = nueva_insa_total
+                    choice[nuevo_estado] = (estado, materias_asignadas, id_est)
+                    #print(f"Estados nuevos: {estados_nuevos}")
+                    #print(f"choice[nuevo_estado] {choice[nuevo_estado]} estados_nuevos[nuevo_estado]  {estados_nuevos[nuevo_estado]}")
+        # Agregar los nuevos estados al DP
+        dp = {}
+        dp.update(estados_nuevos)
+        #print("DP:", dp)
+        #print(f"Estados activos después de procesar {id_est}: {len([e for e in dp if e[0] == i])}")
+    
+    # Encontrar el mejor estado final
+    estados_finales = [(estado, insa) for estado, insa in dp.items()]
+    
+    if not estados_finales:
+        return inf, {}
+    
+    mejor_estado, mejor_insa = min(estados_finales, key=lambda x: x[1])
+    mejor_insa_promedio = mejor_insa / n
+    
+    print(f"Estado final: {mejor_estado}")
+    
+    # Reconstrucción de la solución
+    asignaciones = {}
+    estado_actual = mejor_estado
+    
+    while choice[estado_actual] is not None:
+        estado_anterior, materias_asignadas, id_est = choice[estado_actual]
+        if materias_asignadas:
+            asignaciones[id_est] = list(materias_asignadas.keys())
         else:
-            menorInsatisfaccion(materias[i], matrix[i], matrix[i-1], estudiantes_dict)
-
-    # Reconstrucción
-    for j in range(columnas):
-        i = filas - 1
-        matriculadas = []
-        insatisfaccion_estudiante = 0
-        
-        while i >= 0:
-            if matrix[i][j][2] == 1:
-                matriculadas.append(materias[i][0])
-                insatisfaccion_estudiante = matrix[i][j][1]
-                i -= 1
-            else:
-                i -= 1
-        
-        asignaciones[j] = (estudiantes[j][0], matriculadas)
-        ins_finales[j] = insatisfaccion_estudiante
-
-    # Verificar que no hay valores None
-    ins_finales = [x if x is not None else 0 for x in ins_finales]
-    insatisfaccion_total = sum(ins_finales) / columnas
-    return asignaciones, insatisfaccion_total
+            asignaciones[id_est] = []
+        estado_actual = estado_anterior
     
-def escribir_salidaPD(ruta_archivo, asignaciones, costo):
-    try:
-        with open(ruta_archivo, 'w', encoding='utf-8') as f:
-            f.write(f"{costo}\n")
-            for i in range(len(asignaciones)):
-                e_id, materias_asignadas = asignaciones[i]
-                print("Estudiante:", e_id, "Materias asignadas:", materias_asignadas)
-                num_asignadas = len(materias_asignadas)
-                f.write(f"{e_id},{num_asignadas}\n")
-                materias_asignadas.sort()
-                for i in range(len(materias_asignadas)):
-                    mat_id = materias_asignadas[i]
-                    f.write(f"{mat_id}\n")
-        print(f"Solución guardada en '{ruta_archivo}'")
-    except Exception as e:
-        print(f"Error al guardar el archivo de salida. Detalles: {e}")
+    return asignaciones, mejor_insa_promedio

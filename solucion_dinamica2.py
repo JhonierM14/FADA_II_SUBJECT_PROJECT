@@ -75,6 +75,7 @@ def dinamica(materias, estudiantes):
         (insatisfaccion_minima, dict_asignaciones)
     """
     n = len(estudiantes)
+    #print(f"Procesando {n} estudiantes")
     
     # Calcular gamma_max para cada estudiante
     gamma_max = {}
@@ -84,7 +85,7 @@ def dinamica(materias, estudiantes):
         # Extraer solo las preferencias sin 'solicitudes'
         estudiantes_procesados[id_est] = {k: v for k, v in info.items() if k != 'solicitudes'}
     
-    #print(f"Gamma máximo por estudiante: {gamma_max}")
+    #print(f"Primeros 5 estudiantes procesados: {dict(list(estudiantes_procesados.items())[:5])}")
     
     # Guarda (num_estudiante, (cupos_usados_por_materia)) e insatisfacción acumulada mínima
     dp = {}
@@ -96,65 +97,99 @@ def dinamica(materias, estudiantes):
     choice[estado_inicial] = None
     
     estudiantes_list = list(estudiantes_procesados.items())
-    print(f"\nProcesando estudiante  {estudiantes_list}")
+    #print(f"Total de estudiantes en lista: {len(estudiantes_list)}")
 
     # procesar estudiante por estudiante
     for i in range(1, n + 1):
         id_est, preferencias = estudiantes_list[i - 1]
-        #print(f"\nProcesando estudiante {i}/{n}: {id_est}")
+        #print(f"\nProcesando estudiante {i}/{n}: {id_est} con preferencias: {preferencias}")
         
         estados_nuevos = {}
+        
+        # Contar estados del nivel anterior
+        estados_nivel_anterior = [(estado, insa) for estado, insa in dp.items() if estado[0] == i-1]
+        #print(f"Estados disponibles del nivel anterior: {len(estados_nivel_anterior)}")
+        
+        if not estados_nivel_anterior:
+            #print(f"¡ERROR! No hay estados del nivel anterior para procesar estudiante {i}")
+            break
         
         # Iterar sobre todos los estados del nivel anterior
         for estado, insa_acum in dp.items():
             num_est, cupos_usados = estado
-            print(f"cupos_usados {dp.items()} estado: {estado}")
 
             # Solo procesar estados del nivel anterior
             if num_est != i - 1:
                 continue
             
+            #print(f"  Procesando estado: {estado} con insatisfacción acumulada: {insa_acum}")
+            
             # Generar todas las combinaciones válidas de materias para cada estudiante
             combinaciones = generar_combinaciones(
                 materias, cupos_usados, preferencias, gamma_max[id_est]
             )
+            
+            #print(f"  Combinaciones generadas: {len(combinaciones)}")
+            if not combinaciones:
+                #print(f"  ¡ADVERTENCIA! No se generaron combinaciones para {id_est}")
+                # Agregar opción de no asignar nada
+                nuevo_estado = (i, cupos_usados)
+                insa_no_asignar = 1.0  # Insatisfacción máxima por no asignar nada
+                nueva_insa_total = insa_acum + insa_no_asignar
+                
+                if nuevo_estado not in estados_nuevos or nueva_insa_total < estados_nuevos[nuevo_estado]:
+                    estados_nuevos[nuevo_estado] = nueva_insa_total
+                    choice[nuevo_estado] = (estado, {}, id_est)
+                    #print(f"  Agregada opción de no asignar: insatisfacción = {nueva_insa_total}")
+                continue
+            
             # Ordenar por insatisfacción calculada para cada combinación
             combinaciones_con_insa = []
             for nuevos_cupos, materias_asignadas in combinaciones:
                 insa = insatisfaccion_estudiante(preferencias, materias_asignadas)
                 combinaciones_con_insa.append((nuevos_cupos, materias_asignadas, insa))
-            #print(f"Estudiante {id_est} combinaciones_con_insa: {combinaciones_con_insa}")
+            
+            #print(f"  Primera combinación: {combinaciones_con_insa[0] if combinaciones_con_insa else 'Ninguna'}")
 
             for nuevos_cupos, materias_asignadas, insa_estudiante in combinaciones_con_insa:
-                #print(f"Estudiante {id_est} materias_asignadas  {materias_asignadas} insatisfacción {insa_estudiante}")
                 nueva_insa_total = insa_acum + insa_estudiante
-
                 nuevo_estado = (i, nuevos_cupos)
-                #print(f"nuevo_estado: {(i, nuevos_cupos)}")
                 
                 # Actualizar si es mejor que lo que teníamos
                 if nuevo_estado not in estados_nuevos or nueva_insa_total < estados_nuevos[nuevo_estado]:
-                    #print(f"nuevo_estado {nuevo_estado} nueva_insa_total  {nueva_insa_total} estados_nuevos[nuevo_estado]")
                     estados_nuevos[nuevo_estado] = nueva_insa_total
                     choice[nuevo_estado] = (estado, materias_asignadas, id_est)
-                    #print(f"choice[nuevo_estado] {choice[nuevo_estado]} estados_nuevos[nuevo_estado]  {estados_nuevos[nuevo_estado]}")
 
         # Agregar los nuevos estados al DP
         dp.update(estados_nuevos)
-        #print(f"estados_nuevos {estados_nuevos}")
+        #print(f"Estados generados para nivel {i}: {len(estados_nuevos)}")
+        
+        if not estados_nuevos:
+            #print(f"¡ERROR! No se generaron nuevos estados en nivel {i}")
+            break
 
-        #print(f"Estados activos después de procesar {id_est}: {len([e for e in dp if e[0] == i])}")
+        # Limitar a los primeros 10 estudiantes para debug
+        if i >= 10:
+            #print("Limitando debug a primeros 10 estudiantes...")
+            break
     
     # Encontrar el mejor estado final
-    estados_finales = [(estado, insa) for estado, insa in dp.items() if estado[0] == n]
+    if i >= 10:  # Si limitamos el debug
+        estados_finales = [(estado, insa) for estado, insa in dp.items() if estado[0] == i]
+    else:
+        estados_finales = [(estado, insa) for estado, insa in dp.items() if estado[0] == n]
+    
+    #print(f"\nEstados finales encontrados: {len(estados_finales)}")
     
     if not estados_finales:
+        #print("¡ERROR! No se encontraron estados finales")
         return inf, {}
     
     mejor_estado, mejor_insa = min(estados_finales, key=lambda x: x[1])
     mejor_insa_promedio = mejor_insa / n
     
-    print(f"Estado final: {mejor_estado}")
+    #print(f"Mejor estado: {mejor_estado}")
+    #print(f"Mejor insatisfacción total: {mejor_insa}")
     
     # Reconstrucción de la solución
     asignaciones = {}
@@ -168,21 +203,53 @@ def dinamica(materias, estudiantes):
             asignaciones[id_est] = []
         estado_actual = estado_anterior
     
-    return mejor_insa_promedio  , asignaciones
+    return mejor_insa_promedio, asignaciones
 
-# Ejemplo 3 - Datos convertidos del formato de entrada
+# Ejemplo Prueba1 - 5 estudiantes (dataset mínimo para testing básico)
+# ...existing code...
+
+# Nuevo dataset - 20 estudiantes, 4 materias
+# ...existing code...
+
+# Nuevo dataset - 30 estudiantes, 4 materias (mejor distribución de cupos)
 materias = {
-    "M1": 3,  # materia M1 con 3 cupos
-    "M2": 3,  # materia M2 con 3 cupos  
-    "M3": 2   # materia M3 con 2 cupos
+    "1000": 4,   # materia 1000 con 4 cupos
+    "1001": 7,   # materia 1001 con 7 cupos
+    "1002": 15,  # materia 1002 con 15 cupos (¡muy popular!)
+    "1003": 4    # materia 1003 con 4 cupos
 }
 
 estudiantes = {
-    "e1": {"solicitudes": 3, "M1": 5, "M2": 2, "M3": 1},       # 3 solicitudes
-    "e2": {"solicitudes": 3, "M1": 4, "M2": 1, "M3": 3},       # 3 solicitudes
-    "e3": {"solicitudes": 2, "M2": 3, "M3": 2},                # 2 solicitudes
-    "e4": {"solicitudes": 2, "M1": 2, "M3": 3},                # 2 solicitudes
-    "e5": {"solicitudes": 3, "M1": 2, "M2": 3, "M3": 3}        # 3 solicitudes
+    "100": {"solicitudes": 4, "1001": 5, "1000": 3, "1002": 1, "1003": 2},
+    "101": {"solicitudes": 4, "1002": 3, "1001": 1, "1000": 2, "1003": 4},
+    "102": {"solicitudes": 1, "1002": 2},
+    "103": {"solicitudes": 2, "1002": 1, "1003": 2},
+    "104": {"solicitudes": 4, "1001": 1, "1002": 3, "1000": 1, "1003": 2},
+    "105": {"solicitudes": 2, "1001": 3, "1002": 1},
+    "106": {"solicitudes": 3, "1000": 3, "1002": 4, "1003": 1},
+    "107": {"solicitudes": 1, "1002": 2},
+    "108": {"solicitudes": 1, "1001": 2},
+    "109": {"solicitudes": 1, "1000": 1},
+    "110": {"solicitudes": 1, "1003": 1},
+    "111": {"solicitudes": 4, "1000": 2, "1001": 4, "1002": 3, "1003": 1},
+    "112": {"solicitudes": 1, "1002": 1},
+    "113": {"solicitudes": 2, "1000": 2, "1001": 1},
+    "114": {"solicitudes": 3, "1000": 3, "1002": 4, "1003": 1},
+    "115": {"solicitudes": 2, "1000": 3, "1001": 2},
+    "116": {"solicitudes": 3, "1002": 5, "1001": 1, "1000": 1},
+    "117": {"solicitudes": 4, "1001": 1, "1000": 5, "1002": 3, "1003": 1},
+    "118": {"solicitudes": 4, "1002": 2, "1003": 1, "1001": 4, "1000": 3},
+    "119": {"solicitudes": 4, "1000": 1, "1002": 1, "1003": 2, "1001": 4},
+    "120": {"solicitudes": 3, "1000": 4, "1001": 1, "1003": 3},
+    "121": {"solicitudes": 1, "1000": 1},
+    "122": {"solicitudes": 4, "1000": 5, "1001": 2, "1002": 2, "1003": 1},
+    "123": {"solicitudes": 2, "1001": 2, "1003": 2},
+    "124": {"solicitudes": 1, "1001": 1},
+    "125": {"solicitudes": 2, "1000": 2, "1001": 3},
+    "126": {"solicitudes": 1, "1002": 1},
+    "127": {"solicitudes": 2, "1001": 2, "1002": 2},
+    "128": {"solicitudes": 4, "1001": 3, "1002": 3, "1003": 4, "1000": 1},
+    "129": {"solicitudes": 3, "1003": 4, "1002": 3, "1000": 1}
 }
 
 valor, asignaciones = dinamica(materias, estudiantes)
