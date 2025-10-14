@@ -30,7 +30,6 @@ def generar_combinaciones(materias_dict, cupos_usados, preferencias_estudiante):
         materias_dict: dict {materia: cupos_totales}
         cupos_usados: tuple con cupos usados de cada materia
         preferencias_estudiante: dict {materia: prioridad}
-        gamma_max_estudiante: máximo de materias que puede tomar
     
     Returns:
         Lista de tuplas (nuevos_cupos_usados, dict_materias_asignadas)
@@ -62,7 +61,6 @@ def generar_combinaciones(materias_dict, cupos_usados, preferencias_estudiante):
                     materias_asignadas = {m: preferencias_estudiante[m] for m in combo}
                     insa = insatisfaccion_estudiante(preferencias_estudiante, materias_asignadas)
                     combinaciones.append((tuple(nuevos_cupos), materias_asignadas, insa))
-
     return combinaciones
 
 def rocPD(materias, estudiantes):
@@ -84,6 +82,7 @@ def rocPD(materias, estudiantes):
         solicitudes = info["solicitudes"]
         solicitudes2 = {id_m: prioridad for id_m, prioridad in solicitudes}
         estudiantes_procesados[id_est] = solicitudes2
+    # print(f"\nestudiantes_procesados: {estudiantes_procesados}")
 
     # Inicializar DP
     dp = {}
@@ -97,7 +96,7 @@ def rocPD(materias, estudiantes):
     # Procesar estudiante por estudiante
     for i in range(1, n + 1):
         id_est, preferencias = estudiantes_list[i - 1]
-        # print(f"\nProcesando estudiante {i}/{n}: {id_est}")
+        #print(f"\n Procesando estudiante {i}/{n}: {id_est}")
         
         # Iterar sobre todos los estados del nivel anterior
         for estado, insa_acum in list(dp.items()):
@@ -109,7 +108,7 @@ def rocPD(materias, estudiantes):
             
             # Generar todas las combinaciones válidas
             combinaciones_con_insa = generar_combinaciones(materias, cupos_usados, preferencias)
-            # print(f"  Estados previos: {estado}, Combinaciones: {len(combinaciones_con_insa)}")
+            #print(f"Estados: {estado}, Combinaciones: {len(combinaciones_con_insa)}")
             
             for nuevos_cupos, materias_asignadas, insa_estudiante in combinaciones_con_insa:
                 nueva_insa_total = insa_acum + insa_estudiante
@@ -129,15 +128,13 @@ def rocPD(materias, estudiantes):
     mejor_estado, mejor_insa = min(estados_finales, key=lambda x: x[1])
     mejor_insa_promedio = mejor_insa / n
     
-    print(f"\nEstado final óptimo: {mejor_estado}")
-
     # Reconstrucción de la solución
     asignaciones = {}
     estado_actual = mejor_estado
-    
     while choice[estado_actual] is not None:
         estado_anterior, materias_asignadas, id_est = choice[estado_actual]
         asignaciones[id_est] = list(materias_asignadas.keys())
         estado_actual = estado_anterior
-    
+        # print(f"\n estado_anterior: {estado_anterior}")
+
     return asignaciones, mejor_insa_promedio
