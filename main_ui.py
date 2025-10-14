@@ -67,7 +67,9 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
+        start_time = time.time()
         asignaciones, costo = rocV(materias, estudiantes)
+        end_time = time.time()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -80,11 +82,15 @@ class App:
 
         start: float = time.perf_counter()
         escribir_salida(ruta_salida, asignaciones, costo)
+<<<<<<< HEAD
         end: float = time.perf_counter()
 
         print("Asignaciones: ", asignaciones)
         print("Insatisfacción: ", costo)
     
+=======
+        print(f"Tiempo de ejecución (Voraz): {end_time - start_time:.6f} segundos")
+>>>>>>> 6bd092eb2475711c700622609ceb36d7d013ad6b
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
         print("Tiempo de ejecucion: ", end - start)
         
@@ -109,9 +115,15 @@ class App:
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo de fuerza bruta. Por favor, espere.")
 
+<<<<<<< HEAD
         start: float = time.perf_counter()
         asignaciones, costo = rocFB(materias, estudiantes)
         end: float = time.perf_counter()
+=======
+        start: float = time.time()
+        asignaciones, costo = rocFB(materias, estudiantes)
+        end: float = time.time()
+>>>>>>> 6bd092eb2475711c700622609ceb36d7d013ad6b
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -123,9 +135,12 @@ class App:
             return
         
         escribir_salida(ruta_salida, asignaciones, costo)
+<<<<<<< HEAD
 
         print("Asignaciones: ", asignaciones)
         print("Insatisfacción: ", costo)
+=======
+>>>>>>> 6bd092eb2475711c700622609ceb36d7d013ad6b
         
         print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
@@ -142,9 +157,7 @@ class App:
         materias, estudiantes = leer_entrada(ruta_entrada)
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
-            return
-        #print("Materias: ", materias)
-        #print("Estudiantes: ", estudiantes)   
+            return  
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo dinamico. Por favor, espere.")
 
         ruta_salida = filedialog.asksaveasfilename(
@@ -155,6 +168,7 @@ class App:
         )
         if not ruta_salida:
             return
+<<<<<<< HEAD
 
         start: float = time.perf_counter()
         asignaciones, costo = rocPD(materias, estudiantes)
@@ -163,6 +177,14 @@ class App:
         print("Insatisfacción: ", costo)
 
         escribir_salida(ruta_salida, asignaciones, costo)
+=======
+        start: float = time.time()
+        asignaciones, costo = rocPD(materias, estudiantes)
+        end: float = time.time()
+        
+        escribir_salidaPD(ruta_salida, asignaciones, costo)
+        
+>>>>>>> 6bd092eb2475711c700622609ceb36d7d013ad6b
         print("Tiempo de ejecucion: ", end - start)
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
