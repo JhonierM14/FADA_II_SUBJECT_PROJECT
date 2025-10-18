@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, font
+from tkinter import filedialog, messagebox, font, ttk
 
 from solucion_voraz import rocV
 from solucion_fb import rocFB
@@ -83,8 +83,9 @@ class App:
 
         escribir_salida(ruta_salida, asignaciones, costo)
     
-        print(f"V, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
+        print(f"V, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}, asignaciones {asignaciones}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
+        self.mostrar_solucion(asignaciones, costo, "Solución Voraz")
 
     def ejecutar_fuerza_bruta(self):
         ruta_entrada = filedialog.askopenfilename(
@@ -122,9 +123,9 @@ class App:
         
         escribir_salida(ruta_salida, asignaciones, costo)
 
-        print(f"FB, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
+        print(f"FB, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}, asignaciones {asignaciones}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
-
+        self.mostrar_solucion(asignaciones, costo, "Solución Fuerza Bruta")
 
     def ejecutar_dinamica(self):
         ruta_entrada = filedialog.askopenfilename(
@@ -154,8 +155,63 @@ class App:
         end: float = time.perf_counter()
 
         escribir_salida(ruta_salida, asignaciones, costo)
-        print(f"PD, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
+        print(f"PD, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}, asignaciones {asignaciones}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
+        self.mostrar_solucion(asignaciones, costo, "Solución Programación Dinámica")
+
+    def mostrar_solucion(self, asignaciones, costo, titulo):
+        ventana = tk.Toplevel(self.root)
+        ventana.title(titulo)
+        ventana.geometry("650x400")
+        ventana.config(bg=self.color_bg)
+
+        lbl = tk.Label(ventana, text=f"{titulo}", 
+                    font=self.font_label, bg=self.color_bg, fg=self.color_fg_purple)
+        lbl.pack(pady=10)
+
+        # Crear tabla
+        tree = ttk.Treeview(ventana, columns=("Estudiante", "Materias Asignadas"), show="headings")
+        tree.heading("Estudiante", text="Estudiante")
+        tree.heading("Materias Asignadas", text="Materias Asignadas")
+        tree.column("Estudiante", width=150, anchor="center")
+        tree.column("Materias Asignadas", width=400, anchor="center")
+
+        # --- Manejo de diferentes formatos ---
+        if isinstance(asignaciones, dict):
+            # Ej: {'100': ['1001', '1002'], '101': ['1003']}
+            for estudiante, materias in asignaciones.items():
+                if isinstance(materias, list):
+                    materias_str = ", ".join(str(m) for m in materias)
+                else:
+                    materias_str = str(materias)
+                tree.insert("", "end", values=(estudiante, materias_str))
+
+        elif isinstance(asignaciones, list):
+            # Ej: [('100', ['1001', '1002']), ('101', ['1003'])]
+            for item in asignaciones:
+                if isinstance(item, (tuple, list)) and len(item) == 2:
+                    estudiante, materias = item
+                    if isinstance(materias, list):
+                        materias_str = ", ".join(str(m) for m in materias)
+                    else:
+                        materias_str = str(materias)
+                    tree.insert("", "end", values=(estudiante, materias_str))
+                else:
+                    tree.insert("", "end", values=(str(item), ""))
+
+        else:
+            tree.insert("", "end", values=("Formato desconocido", ""))
+
+        tree.pack(expand=True, fill="both", padx=20, pady=10)
+
+        lbl_costo = tk.Label(ventana, text=f"Insatisfacción total: {costo}",
+                            font=self.font_label, bg=self.color_bg, fg="white")
+        lbl_costo.pack(pady=10)
+
+        btn_cerrar = tk.Button(ventana, text="Cerrar", command=ventana.destroy,
+                            bg=self.color_btn, fg=self.color_fg_purple, relief=tk.FLAT, pady=5)
+        btn_cerrar.pack(pady=5)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
