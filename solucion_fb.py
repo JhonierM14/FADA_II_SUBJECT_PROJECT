@@ -29,7 +29,7 @@ def encontrarMateria(estudiante: list, codigoMateria: str) -> bool:
     
     return False
 
-def getEstudiantesByMateria(estudiantes: list, materias: list) -> None:
+def getEstudiantesByMateria(estudiantes: list, materias: list, ObjectMaterias: list) -> None:
     """
     Crea una materia y añade a cada estudiante que quiere ver la materia
     Cada materia tiene una copia del estudiante que quiere ver la materia
@@ -41,8 +41,6 @@ def getEstudiantesByMateria(estudiantes: list, materias: list) -> None:
     Return
     - None (void)
     """
-
-    global ObjectMaterias
     
     for id, cupos in materias: # 3
         lista_estudiantes = list()
@@ -187,18 +185,17 @@ def encontrarSolucion(listaCombinacionesMateriasAceptadas: list[list[Materia]], 
 
         # Calcular insatisfacción general para esta combinación
 
-        #print("\n--- Nueva Combinación ---")
-        #print(len(combinacion))
-        #print(combinacion)
-        #print("\n\n")
+        # print("\n--- Nueva Combinación ---")
+        # print(len(combinacion))
+        # print(combinacion)
+        # print("\n\n")
         insatisfaccion = medirInsatisfaccionGeneral(list(combinacion), estudiantes)
 
         # Verificar si es la mejor hasta ahora
-        if insatisfaccion < menor_insatisfaccion:
+        if insatisfaccion < menor_insatisfaccion and insatisfaccion >= 0:
             menor_insatisfaccion = insatisfaccion
             mejor_combinacion = combinacion
-
-
+    
     #print("\n\n------")
     #print(f"Mejor combinación: {mejor_combinacion}, \nInsatisfacción: {menor_insatisfaccion}")
     return mejor_combinacion, menor_insatisfaccion
@@ -216,10 +213,11 @@ def rocFB(materias: list[Materia], estudiantes: list) -> tuple:
     - mejor_combinacion (list): lista con la mejor combinación de materias
     - menor_insatisfaccion (float): valor mínimo de insatisfacción general
     """
+    ObjectMaterias: list = []
 
     # se añade a la lista "ObjectMaterias" objetos creados de las materias, 
     # cada objeto tiene una copia de los estudiantes que quieren ver la materia
-    getEstudiantesByMateria(estudiantes, materias)
+    getEstudiantesByMateria(estudiantes, materias, ObjectMaterias)
 
     ListaDeListaDeSoluciones = list()
 
@@ -240,33 +238,33 @@ def rocFB(materias: list[Materia], estudiantes: list) -> tuple:
     # # se encuentra la mejor combinacion de estudiantes para todas las materias
     return asignaciones, menor_insatisfaccion
 
-# Archivo de texto
-materias = [
-            ("M1", 3), 
-            ("M2", 4), 
-            ("M3", 2)
-            ]
-ms = [
-        [("M1", 5), ("M2", 2), ("M3", 1)],
-        [("M1", 4), ("M2", 1), ("M3", 3)],
-        [("M1", 3), ("M2", 2)],
-        [("M1", 2), ("M2", 3)],
-        [("M1", 3), ("M2", 2), ("M3", 3)]
-      ]
-estudiantes = [
-                ("e1", ms[0]), 
-                ("e2", ms[1]), 
-                ("e3", ms[2]), 
-                ("e4", ms[3]), 
-                ("e5", ms[4])
-             ]
+# # Archivo de texto
+# materias = [
+#             ("M1", 3), 
+#             ("M2", 4), 
+#             ("M3", 2)
+#             ]
+# ms = [
+#         [("M1", 5), ("M2", 2), ("M3", 1)],
+#         [("M1", 4), ("M2", 1), ("M3", 3)],
+#         [("M1", 3), ("M2", 2)],
+#         [("M1", 2), ("M2", 3)],
+#         [("M1", 3), ("M2", 2), ("M3", 3)]
+#       ]
+# estudiantes = [
+#                 ("e1", ms[0]), 
+#                 ("e2", ms[1]), 
+#                 ("e3", ms[2]), 
+#                 ("e4", ms[3]), 
+#                 ("e5", ms[4])
+#              ]
 
-# Almacena las materias con todos los estudiantes que la quieren ver.
-ObjectMaterias = []
+# # Almacena las materias con todos los estudiantes que la quieren ver.
+# ObjectMaterias = []
 
-if __name__ == "__main__":
-    start_time = time.time()
-    mejor_combinacion, menor_insatisfaccion = rocFB(materias, estudiantes)
-    end_time = time.time()
-    print(f"\nTiempo de ejecución: {end_time - start_time} segundos")
-    print(f"Mejor combinación: {mejor_combinacion}, \nInsatisfacción: {menor_insatisfaccion}")
+# if __name__ == "__main__":
+#     start_time = time.time()
+#     mejor_combinacion, menor_insatisfaccion = rocFB(materias, estudiantes)
+#     end_time = time.time()
+#     print(f"\nTiempo de ejecución: {end_time - start_time} segundos")
+#     print(f"Mejor combinación: {mejor_combinacion}, \nInsatisfacción: {menor_insatisfaccion}")

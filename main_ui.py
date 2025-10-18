@@ -67,7 +67,10 @@ class App:
             return
             
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo voraz. Por favor, espere.")
+
+        start: float = time.perf_counter()
         asignaciones, costo = rocV(materias, estudiantes)
+        end: float = time.perf_counter()
 
         ruta_salida = filedialog.asksaveasfilename(
             title="Guardar archivo de salida",
@@ -78,16 +81,11 @@ class App:
         if not ruta_salida:
             return
 
-        start: float = time.perf_counter()
         escribir_salida(ruta_salida, asignaciones, costo)
-        end: float = time.perf_counter()
-
-        print("Asignaciones: ", asignaciones)
-        print("Insatisfacción: ", costo)
     
+        print(f"V, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
-        print("Tiempo de ejecucion: ", end - start)
-        
+
     def ejecutar_fuerza_bruta(self):
         ruta_entrada = filedialog.askopenfilename(
             title="Seleccione el archivo de entrada",
@@ -124,10 +122,7 @@ class App:
         
         escribir_salida(ruta_salida, asignaciones, costo)
 
-        print("Asignaciones: ", asignaciones)
-        print("Insatisfacción: ", costo)
-        
-        print("Tiempo de ejecucion: ", end - start)
+        print(f"FB, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 
@@ -143,8 +138,6 @@ class App:
         if materias is None or estudiantes is None:
             messagebox.showerror("Error de Lectura", "No se pudieron leer los datos del archivo.")
             return
-        #print("Materias: ", materias)
-        #print("Estudiantes: ", estudiantes)   
         messagebox.showinfo("Procesando", "Ejecutando el algoritmo dinamico. Por favor, espere.")
 
         ruta_salida = filedialog.asksaveasfilename(
@@ -159,11 +152,9 @@ class App:
         start: float = time.perf_counter()
         asignaciones, costo = rocPD(materias, estudiantes)
         end: float = time.perf_counter()
-        print("Asignaciones: ", asignaciones)
-        print("Insatisfacción: ", costo)
 
         escribir_salida(ruta_salida, asignaciones, costo)
-        print("Tiempo de ejecucion: ", end - start)
+        print(f"PD, Tiempo de ejecucion: {end - start}, insatisfaccion {costo}")
         messagebox.showinfo("Éxito", f"Solución guardada en '{ruta_salida}'")
 
 if __name__ == "__main__":
